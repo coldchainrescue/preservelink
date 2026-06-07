@@ -1,0 +1,77 @@
+[
+  {
+    "id": "user-001",
+    "fullName": "Hanisah Johaari",
+    "email": "hanisahjohaari@gmail.com",
+    "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+    "workingPlace": "Hospital Kuala Lumpur",
+    "rphNumber": "RPh025963",
+    "role": "true_admin",
+    "verificationStatus": "verified",
+    "apcFileUrl": "",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user-002",
+    "fullName": "Ahmad Razali bin Mohd Yusof",
+    "email": "ahmad.razali@moh.gov.my",
+    "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+    "workingPlace": "Hospital Sultanah Aminah",
+    "rphNumber": "RPh031245",
+    "role": "user",
+    "verificationStatus": "verified",
+    "apcFileUrl": "",
+    "createdAt": "2024-02-15T00:00:00.000Z",
+    "updatedAt": "2026-06-07T15:14:46.545Z"
+  },
+  {
+    "id": "user-003",
+    "fullName": "Siti Nurhaliza binti Abdullah",
+    "email": "siti.nur@moh.gov.my",
+    "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+    "workingPlace": "Hospital Pulau Pinang",
+    "rphNumber": "RPh028976",
+    "role": "user",
+    "verificationStatus": "verified",
+    "apcFileUrl": "",
+    "createdAt": "2024-03-20T00:00:00.000Z",
+    "updatedAt": "2024-03-20T00:00:00.000Z"
+  },
+  {
+    "id": "user-6afe9512",
+    "fullName": "Hanisah Lina Binti Johaari",
+    "email": "hayleeshaffer4@gmail.com",
+    "password": "$2a$10$yPW8BOb88y8wiVEzKI2SG.EZ/gHiNknn9lDnTRkC8ff.afsJDJM7G",
+    "workingPlace": "Hospital Kulim",
+    "rphNumber": "25963",
+    "role": "user",
+    "verificationStatus": "verified",
+    "apcFileUrl": "6a3ce6d0-14a0-45f9-9233-5ef88e2552c9.pdf",
+    "createdAt": "2026-06-07T15:23:01.794Z",
+    "updatedAt": "2026-06-07T15:23:03.807Z"
+  },
+  {
+    "id": "user-3dad5e1a",
+    "fullName": "aaa",
+    "email": "hayll@gmail.com",
+    "password": "$2a$10$6EnNB9XGp/jyG2roOmMzkO5./rWaBtmyBkPuoAQM8asXX4nbfQHwW",
+    "workingPlace": "hkl",
+    "rphNumber": "25963",
+    "role": "user",
+    "verificationStatus": "rejected",
+    "apcFileUrl": "8ee21681-3ab3-451d-91b6-971d955b7763.pdf",
+    "apcOcrResult": {
+      "keywordFound": true,
+      "nameMatch": true,
+      "rphMatch": true,
+      "message": "Demo OCR: file looks like an APC. Pending admin verification."
+    },
+    "verificationRejectedReason": "apc file not valid",
+    "createdAt": "2026-06-07T16:18:44.906Z",
+    "updatedAt": "2026-06-07T16:19:30.693Z",
+    "apcOriginalFilename": "Find A Registered Pharmacist _ PRiSMA, MOH.pdf",
+    "rejectedAt": "2026-06-07T16:19:30.693Z",
+    "rejectedBy": "user-001"
+  }
+]

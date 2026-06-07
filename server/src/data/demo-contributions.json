@@ -1,0 +1,110 @@
+[
+  {
+    "id": "contrib-001",
+    "userId": "user-003",
+    "contributorName": "Siti Nurhaliza binti Abdullah",
+    "genericName": "Tocilizumab",
+    "strength": "200mg/10mL",
+    "brandName": "Actemra",
+    "manufacturer": "Roche",
+    "category": "Biologic",
+    "mktAvailable": false,
+    "stabilityStatements": [
+      {
+        "manufacturer": "Roche",
+        "drugName": "Actemra",
+        "temperature": 25,
+        "duration": 24,
+        "durationUnit": "hours",
+        "stabilityPeriod": 24,
+        "stabilityUnit": "hours"
+      }
+    ],
+    "attachmentUrls": [],
+    "status": "pending",
+    "createdAt": "2024-06-01T10:00:00.000Z",
+    "updatedAt": "2024-06-01T10:00:00.000Z"
+  },
+  {
+    "id": "contrib-002",
+    "userId": "user-003",
+    "contributorName": "Siti Nurhaliza binti Abdullah",
+    "genericName": "Pegfilgrastim",
+    "strength": "6mg/0.6mL",
+    "brandName": "Neulasta",
+    "manufacturer": "Amgen",
+    "category": "Colony-Stimulating Factor",
+    "mktAvailable": false,
+    "stabilityStatements": [
+      {
+        "manufacturer": "Amgen",
+        "drugName": "Neulasta",
+        "temperature": 25,
+        "duration": 72,
+        "durationUnit": "hours",
+        "stabilityPeriod": 72,
+        "stabilityUnit": "hours"
+      }
+    ],
+    "attachmentUrls": [],
+    "status": "awaiting_reply",
+    "adminComment": "Please provide the manufacturer's official letter or email confirming this stability data.",
+    "createdAt": "2024-05-15T08:30:00.000Z",
+    "updatedAt": "2024-05-20T14:00:00.000Z"
+  },
+  {
+    "id": "contrib-d7a98a5d",
+    "userId": "user-001",
+    "contributorName": "Hanisah Johaari",
+    "genericName": "Insulatard",
+    "strength": "100iu/ml",
+    "brandName": "Insulatard",
+    "manufacturer": "X",
+    "category": "Insulin",
+    "mktAvailable": true,
+    "mktDetails": "not known",
+    "stabilityStatements": [
+      {
+        "manufacturer": "1",
+        "drugName": "S",
+        "temperature": "3",
+        "duration": "5",
+        "durationUnit": "hours",
+        "stabilityPeriod": "55",
+        "stabilityUnit": "days"
+      }
+    ],
+    "attachmentUrls": [],
+    "status": "awaiting_reply",
+    "createdAt": "2026-06-07T15:19:53.605Z",
+    "updatedAt": "2026-06-07T15:20:19.274Z",
+    "adminComment": "incomplete??"
+  },
+  {
+    "id": "contrib-3263ec78",
+    "userId": "user-6afe9512",
+    "contributorName": "Hanisah Lina Binti Johaari",
+    "genericName": "Triamcinolone",
+    "strength": "100iu/ml",
+    "brandName": "Insulatard",
+    "manufacturer": "X",
+    "category": "__other",
+    "mktAvailable": false,
+    "stabilityStatements": [
+      {
+        "manufacturer": "x",
+        "drugName": "s",
+        "temperature": "5",
+        "duration": "44",
+        "durationUnit": "hours",
+        "stabilityPeriod": "442",
+        "stabilityUnit": "days"
+      }
+    ],
+    "attachmentUrls": [],
+    "status": "rejected",
+    "createdAt": "2026-06-07T15:23:50.480Z",
+    "updatedAt": "2026-06-07T15:25:22.972Z",
+    "adminComment": "irrelevant data?"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "name": "preservelink",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["client", "server", "shared"],
+  "scripts": {
+    "dev": "concurrently -n CLIENT,SERVER -c blue,green \"npm run dev --workspace=client\" \"npm run dev --workspace=server\"",
+    "build": "npm run build -w client && npm run build -w server",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.5"
+  }
+}

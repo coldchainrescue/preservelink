@@ -1,0 +1,82 @@
+[
+  {
+    "id": "notif-001",
+    "userId": "user-003",
+    "title": "Submission Under Review",
+    "message": "Your submission for Tocilizumab (Actemra) is being reviewed by our admin team.",
+    "type": "info",
+    "read": false,
+    "link": "/dashboard?tab=submissions",
+    "createdAt": "2024-06-01T10:05:00.000Z"
+  },
+  {
+    "id": "notif-002",
+    "userId": "user-003",
+    "title": "Action Required",
+    "message": "Admin has requested additional information for your Pegfilgrastim (Neulasta) submission.",
+    "type": "warning",
+    "read": false,
+    "link": "/dashboard?tab=submissions",
+    "createdAt": "2024-05-20T14:00:00.000Z"
+  },
+  {
+    "id": "notif-003",
+    "userId": "user-001",
+    "title": "New Submission Received",
+    "message": "Siti Nurhaliza has submitted new stability data for Tocilizumab (Actemra). Please review.",
+    "type": "info",
+    "read": true,
+    "link": "/admin?tab=inbox",
+    "createdAt": "2024-06-01T10:05:00.000Z"
+  },
+  {
+    "id": "notif-6895a120",
+    "userId": "user-001",
+    "title": "New Submission Received",
+    "message": "Hanisah Johaari has submitted new stability data for Insulatard (Insulatard).",
+    "type": "info",
+    "read": true,
+    "link": "/admin?tab=inbox",
+    "createdAt": "2026-06-07T15:19:53.606Z"
+  },
+  {
+    "id": "notif-dbc842a4",
+    "userId": "user-001",
+    "title": "Action Required",
+    "message": "Admin has requested additional information for Insulatard. incomplete??",
+    "type": "warning",
+    "read": true,
+    "link": "/dashboard?tab=submissions",
+    "createdAt": "2026-06-07T15:20:19.275Z"
+  },
+  {
+    "id": "notif-4e0ed37b",
+    "userId": "user-001",
+    "title": "New Submission Received",
+    "message": "Hanisah Lina Binti Johaari has submitted new stability data for Triamcinolone (Insulatard).",
+    "type": "info",
+    "read": true,
+    "link": "/admin?tab=inbox",
+    "createdAt": "2026-06-07T15:23:50.481Z"
+  },
+  {
+    "id": "notif-be6171b1",
+    "userId": "user-6afe9512",
+    "title": "Submission Rejected",
+    "message": "Your submission for Triamcinolone has been rejected. irrelevant data?",
+    "type": "error",
+    "read": true,
+    "link": "/dashboard?tab=submissions",
+    "createdAt": "2026-06-07T15:25:22.973Z"
+  },
+  {
+    "id": "notif-8d16c88a",
+    "userId": "user-001",
+    "title": "New Registration — Verification Required",
+    "message": "aaa (hayll@gmail.com, RPh 25963) has registered and is awaiting APC verification.",
+    "type": "warning",
+    "link": "/admin?tab=pending-users&user=user-3dad5e1a",
+    "read": true,
+    "createdAt": "2026-06-07T16:18:44.932Z"
+  }
+]

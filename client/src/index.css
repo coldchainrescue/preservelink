@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #1e40af;
+  --color-secondary: #3b82f6;
+  --color-accent: #60a5fa;
+  --color-safe: #16a34a;
+  --color-warning: #ea580c;
+  --color-critical: #dc2626;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-700 hover:bg-primary-800 text-white font-medium py-2.5 px-5 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-5 rounded-lg transition-colors duration-200;
+  }
+  .btn-danger {
+    @apply bg-critical-600 hover:bg-critical-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors duration-200;
+  }
+  .input-field {
+    @apply w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all duration-200;
+  }
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+  .badge-safe {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-safe-50 text-safe-700;
+  }
+  .badge-warning {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-warning-50 text-warning-700;
+  }
+  .badge-critical {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-critical-50 text-critical-700;
+  }
+  .badge-pending {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700;
+  }
+}
