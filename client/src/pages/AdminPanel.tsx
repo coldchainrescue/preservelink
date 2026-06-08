@@ -231,7 +231,7 @@ export default function AdminPanel() {
                     <p className="font-medium text-gray-700 mb-1">Automated APC Check:</p>
                     <ul className="text-xs space-y-0.5 text-gray-700">
                       <li>
-                        Contains &quot;Annual Practising Certificate&quot; phrase:{' '}
+                        Contains &quot;Annual Certificate&quot; phrase:{' '}
                         <span className={u.apcOcrResult.keywordFound ? 'text-safe-700 font-medium' : 'text-critical-700 font-medium'}>
                           {u.apcOcrResult.keywordFound ? 'Yes' : 'No'}
                         </span>

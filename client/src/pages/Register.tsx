@@ -49,7 +49,7 @@ export default function Register() {
       return;
     }
     if (!apcFile) {
-      toast.error('You must upload your Annual Practising Certificate (APC) file.');
+      toast.error('You must upload your Annual Certificate (AC) file.');
       return;
     }
 
@@ -158,7 +158,7 @@ export default function Register() {
             {/* APC Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Annual Practising Certificate (APC)
+                Annual Certificate (AC)
               </label>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2 text-xs text-blue-800 space-y-1.5">
                 <p className="font-medium">How to obtain your APC:</p>
@@ -176,7 +176,7 @@ export default function Register() {
                     </a>{' '}
                     and log in to your account.
                   </li>
-                  <li>Download your <strong>Annual Practising Certificate (APC)</strong> as a PDF, OR</li>
+                  <li>Download your <strong>Annual Certificate (AC)</strong> as a PDF, OR</li>
                   <li>Take a clear screenshot of your APC.</li>
                   <li>Upload the file below (PDF, JPG, or PNG).</li>
                 </ol>

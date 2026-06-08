@@ -22,7 +22,7 @@ export default function Terms() {
 
             <h2 className="text-lg font-semibold">2. User Eligibility</h2>
             <p>
-              Only registered pharmacists with a valid Annual Practising Certificate (APC) issued by the 
+              Only registered pharmacists with a valid Annual Certificate (AC) issued by the 
               Pharmacy Board Malaysia are eligible to use this platform. Users must provide their 
               Pharmacy Registration Number (RPh) and undergo automated verification.
             </p>

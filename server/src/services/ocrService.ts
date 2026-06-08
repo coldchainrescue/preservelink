@@ -10,8 +10,8 @@ export interface OcrResult {
 }
 
 const APC_KEYWORDS = [
-  'annual practising certificate',
-  'annual practicing certificate', // US spelling fallback
+  'annual certificate',
+  'annual certificate', // US spelling fallback
 ];
 
 function containsApcKeyword(text: string): boolean {
@@ -93,7 +93,7 @@ export const ocrService = {
 
       let message = '';
       if (!keywordFound) {
-        message = 'The uploaded file does not appear to be a valid Annual Practising Certificate. The phrase "Annual Practising Certificate" was not found.';
+        message = 'The uploaded file does not appear to be a valid Annual Certificate. The phrase "Annual Certificate" was not found.';
       } else if (!nameMatch) {
         message = 'Verification failed: the name on the certificate does not match your registered name.';
       } else if (!rphMatch) {

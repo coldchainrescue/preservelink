@@ -129,10 +129,7 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Demo credentials hint */}
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
-            <strong>Demo Mode:</strong> Use <code>hanisahjohaari@gmail.com</code> / <code>demo123</code>
-          </div>
+          
         </div>
       </div>
     </div>

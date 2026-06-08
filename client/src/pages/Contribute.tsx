@@ -126,7 +126,7 @@ export default function Contribute() {
           </p>
           <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
             You will be able to contribute new stability data once an administrator
-            has reviewed and approved your Annual Practising Certificate (APC).
+            has reviewed and approved your Annual Certificate (AC).
           </p>
           <Link to="/search" className="btn-primary inline-flex items-center gap-1">
             Go to Search

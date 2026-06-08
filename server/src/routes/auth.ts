@@ -51,7 +51,7 @@ router.post('/register', authLimiter, upload.single('apcFile'), async (req: Requ
     }
     // APC file is now ALWAYS required (in both demo and production mode).
     if (!req.file) {
-      return res.status(400).json({ error: 'You must upload your Annual Practising Certificate (APC) file.' });
+      return res.status(400).json({ error: 'You must upload your Annual Certificate (AC) file.' });
     }
 
     // Check if user exists
@@ -65,11 +65,11 @@ router.post('/register', authLimiter, upload.single('apcFile'), async (req: Requ
     const ocrResult = await ocrService.verifyAPC(fileBuffer, fullName, rphNumber, req.file.originalname);
 
     // In production mode, if the file does not contain the phrase
-    // "Annual Practising Certificate", reject registration outright. In demo
+    // "Annual Certificate", reject registration outright. In demo
     // mode we record the heuristic result and let the admin make the final call.
     if (!env.DEMO_MODE && !ocrResult.keywordFound) {
       return res.status(400).json({
-        error: 'The uploaded file does not appear to be a valid Annual Practising Certificate (the phrase "Annual Practising Certificate" was not detected). Please upload your actual APC.',
+        error: 'The uploaded file does not appear to be a valid Annual Certificate (the phrase "Annual Certificate" was not detected). Please upload your actual APC.',
       });
     }
 
