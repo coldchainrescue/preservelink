@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Shield, Users, CheckCircle, XCircle, MessageSquare, ArrowUpCircle, Send, FileText, UserCheck, ExternalLink } from 'lucide-react';
+import { Shield, Users, CheckCircle, XCircle, MessageSquare, ArrowUpCircle, Send, FileText, UserCheck, ExternalLink, KeyRound, Eye, EyeOff } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
@@ -19,6 +19,10 @@ export default function AdminPanel() {
   const [stats, setStats] = useState<any>(null);
   const submissionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const userRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  // Password reset state (true admin only)
+  const [resetForm, setResetForm] = useState<{ [userId: string]: string }>({});
+  const [showResetInput, setShowResetInput] = useState<{ [userId: string]: boolean }>({});
+  const [showNewPw, setShowNewPw] = useState<{ [userId: string]: boolean }>({});
 
   useEffect(() => {
     fetchData();
@@ -138,6 +142,22 @@ export default function AdminPanel() {
       setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role } : u));
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to update role');
+    }
+  };
+
+  const handleResetPassword = async (userId: string, userEmail: string) => {
+    const newPassword = resetForm[userId]?.trim();
+    if (!newPassword || newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+    try {
+      await api.post('/admin/reset-password', { userId, newPassword });
+      toast.success(`Password reset for ${userEmail}`);
+      setResetForm((prev) => ({ ...prev, [userId]: '' }));
+      setShowResetInput((prev) => ({ ...prev, [userId]: false }));
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to reset password');
     }
   };
 
@@ -429,16 +449,58 @@ export default function AdminPanel() {
                     <td className="py-3 px-2 text-gray-600">{u.email}</td>
                     <td className="py-3 px-2 text-gray-600">{u.workingPlace}</td>
                     <td className="py-3 px-2"><span className={`text-xs font-medium px-2 py-1 rounded ${u.role === 'true_admin' ? 'bg-purple-100 text-purple-700' : u.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>{u.role}</span></td>
-                    <td className="py-3 px-2">
-                      {u.role === 'user' && (
-                        <button onClick={() => handleRoleChange(u.id, 'admin')} className="flex items-center gap-1 text-xs text-primary-600 hover:underline">
-                          <ArrowUpCircle size={14} />Promote to Admin
-                        </button>
-                      )}
-                      {u.role === 'admin' && (
-                        <button onClick={() => handleRoleChange(u.id, 'user')} className="text-xs text-gray-500 hover:underline">
-                          Demote to User
-                        </button>
+                    <td className="py-3 px-2 space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {u.role === 'user' && (
+                          <button onClick={() => handleRoleChange(u.id, 'admin')} className="flex items-center gap-1 text-xs text-primary-600 hover:underline">
+                            <ArrowUpCircle size={14} />Promote to Admin
+                          </button>
+                        )}
+                        {u.role === 'admin' && (
+                          <button onClick={() => handleRoleChange(u.id, 'user')} className="text-xs text-gray-500 hover:underline">
+                            Demote to User
+                          </button>
+                        )}
+                        {u.role !== 'true_admin' && (
+                          <button
+                            onClick={() => setShowResetInput((prev) => ({ ...prev, [u.id]: !prev[u.id] }))}
+                            className="flex items-center gap-1 text-xs text-warning-600 hover:underline"
+                          >
+                            <KeyRound size={14} />Reset Password
+                          </button>
+                        )}
+                      </div>
+                      {showResetInput[u.id] && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <div className="relative">
+                            <input
+                              type={showNewPw[u.id] ? 'text' : 'password'}
+                              placeholder="New password (min 8)"
+                              value={resetForm[u.id] || ''}
+                              onChange={(e) => setResetForm((prev) => ({ ...prev, [u.id]: e.target.value }))}
+                              className="border border-gray-300 rounded px-2 py-1 text-xs w-40 pr-7"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowNewPw((prev) => ({ ...prev, [u.id]: !prev[u.id] }))}
+                              className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400"
+                            >
+                              {showNewPw[u.id] ? <EyeOff size={12} /> : <Eye size={12} />}
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => handleResetPassword(u.id, u.email)}
+                            className="bg-warning-600 text-white text-xs px-2 py-1 rounded hover:bg-warning-700"
+                          >
+                            Set
+                          </button>
+                          <button
+                            onClick={() => setShowResetInput((prev) => ({ ...prev, [u.id]: false }))}
+                            className="text-gray-400 text-xs px-1"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

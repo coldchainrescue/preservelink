@@ -15,13 +15,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor - handle token refresh
+// FIX: Only trigger logout/redirect when the ORIGINAL user-initiated request
+// (not a background refresh like /auth/me or /analytics/track) gets a 401.
+// Background endpoints that fail silently should not log the user out.
+const SILENT_ENDPOINTS = ['/auth/me', '/analytics/track', '/notifications'];
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const isSilent = SILENT_ENDPOINTS.some((ep) => originalRequest?.url?.includes(ep));
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isSilent) {
       originalRequest._retry = true;
 
       try {

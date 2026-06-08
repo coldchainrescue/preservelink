@@ -32,15 +32,18 @@ export default function Layout() {
     return () => clearInterval(interval);
   }, []);
 
-  // Refresh the user record on each page navigation so changes to
-  // verificationStatus (e.g. an admin verifying the account) are reflected
-  // without a manual logout/login.
+  // FIX: Refresh user silently — NEVER logout on failure here.
+  // The backend on Render can cold-start slowly and return errors;
+  // we must not treat that as "user logged out".
   useEffect(() => {
     api.get('/auth/me')
       .then(({ data }) => {
         if (data && data.id) setUser(data);
       })
-      .catch(() => {});
+      .catch(() => {
+        // Silently ignore — keep the user logged in even if /auth/me fails.
+        // The token is still valid; this is just a background refresh.
+      });
   }, [location.pathname, setUser]);
 
   // Track page views
@@ -48,8 +51,6 @@ export default function Layout() {
     api.post('/analytics/track', { eventType: 'page_view', metadata: { path: location.pathname } }).catch(() => {});
   }, [location.pathname]);
 
-  // Hide Contribute from the nav for users who are not verified yet.
-  // Admins are always considered verified.
   const canContribute = isVerified || user?.role === 'admin' || user?.role === 'true_admin';
 
   const navItems = [
