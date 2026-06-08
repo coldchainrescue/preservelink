@@ -115,7 +115,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input name="fullName" value={form.fullName} onChange={handleChange} className="input-field" placeholder="As per APC certificate" required />
+              <input name="fullName" value={form.fullName} onChange={handleChange} className="input-field" placeholder="As per AC certificate" required />
             </div>
 
             <div>
@@ -132,7 +132,7 @@ export default function Register() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Pharmacy Registration Number (RPh)
               </label>
-              <input name="rphNumber" value={form.rphNumber} onChange={handleChange} className="input-field" placeholder="e.g., RPh025963" required />
+              <input name="rphNumber" value={form.rphNumber} onChange={handleChange} className="input-field" placeholder="e.g., RPh012345" required />
               <a
                 href="https://prisma.pharmacy.gov.my/find-registered-pharmacist"
                 target="_blank"
@@ -177,7 +177,7 @@ export default function Register() {
                     and log in to your account.
                   </li>
                   <li>Download your <strong>Annual Certificate (AC)</strong> as a PDF, OR</li>
-                  <li>Take a clear screenshot of your APC.</li>
+                  <li>Take a clear screenshot of your AC.</li>
                   <li>Upload the file below (PDF, JPG, or PNG).</li>
                 </ol>
                 <p className="text-blue-600 italic pt-1">
