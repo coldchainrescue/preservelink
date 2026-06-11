@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 
 export default function Login() {
@@ -9,7 +9,6 @@ export default function Login() {
   const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -17,15 +16,14 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const result = await login(email, password, rememberMe);
-      if (result.requiresTwoFactor) {
-        navigate('/verify-2fa', { state: { email: result.email, rememberMe } });
+      const result = await login(email, password);
+      if (result?.requiresTwoFactor) {
+        navigate('/verify-2fa', { state: { email: result.email } });
       } else {
-        toast.success('Welcome back!');
         navigate('/search');
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Login failed');
+      toast.error(error.response?.data?.error || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -34,7 +32,6 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-700 rounded-2xl mb-4">
             <span className="text-white font-bold text-2xl">PL</span>
@@ -43,7 +40,6 @@ export default function Login() {
           <p className="text-gray-500 mt-1">Cold Chain Stability Tool</p>
         </div>
 
-        {/* Form */}
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign In</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -58,7 +54,6 @@ export default function Login() {
                 required
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <div className="relative">
@@ -80,26 +75,8 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-start gap-2 flex-1">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <label htmlFor="rememberMe" className="text-sm text-gray-600">
-                  Remember this browser for 1 month?
-                  <span className="block text-xs text-gray-400 mt-0.5">
-                    (Not recommended if you are on a public or shared computer)
-                  </span>
-                </label>
-              </div>
-              <Link
-                to="/forgot-password"
-                className="text-sm text-primary-600 hover:text-primary-700 font-medium whitespace-nowrap mt-1"
-              >
+            <div className="flex justify-end">
+              <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
                 Forgot password?
               </Link>
             </div>
@@ -120,17 +97,18 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-                Register here
-              </Link>
-            </p>
+          <div className="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+              Register here
+            </Link>
           </div>
-
-          
         </div>
+
+        <p className="text-center text-xs text-gray-400 mt-6">
+          For authorised Malaysian pharmacists only.{' '}
+          <Link to="/terms" className="underline">Terms & Conditions</Link>
+        </p>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
 import { RATE_LIMITS } from '../config/constants.js';
 import { env } from '../config/env.js';
+import { broadcastEvent } from '../index.js';
 
 const router = Router();
 const authLimiter = rateLimit(RATE_LIMITS.AUTH);
@@ -26,12 +27,18 @@ async function notifyAdminsOfNewRegistration(user: any) {
         type: 'warning',
         link: `/admin?tab=pending-users&user=${user.id}`,
       });
-      // Best-effort email; in demo mode this only logs
       emailService.sendNotification(
         admin.email,
         'New Registration — Verification Required',
         `${user.fullName} (${user.email}, RPh ${user.rphNumber}) has registered. Please review their APC and verify the account.`,
       ).catch(() => {});
+
+      // ── SSE: push live alert to any admin currently online ──
+      broadcastEvent('NEW_USER', {
+        userId: user.id,
+        fullName: user.fullName,
+        email: user.email,
+      }, admin.id);
     }
   } catch (e) {
     console.error('[Notify Admins Error]', e);
@@ -49,34 +56,26 @@ router.post('/register', authLimiter, upload.single('apcFile'), async (req: Requ
     if (!agreedToTerms || agreedToTerms === 'false') {
       return res.status(400).json({ error: 'You must agree to the Terms & Conditions' });
     }
-    // APC file is now ALWAYS required (in both demo and production mode).
     if (!req.file) {
       return res.status(400).json({ error: 'You must upload your Annual Certificate (AC) file.' });
     }
 
-    // Check if user exists
     const existing = await authService.findUserByEmail(email);
     if (existing) {
       return res.status(409).json({ error: 'An account with this email already exists' });
     }
 
-    // Run OCR / heuristic check on the uploaded APC
     const fileBuffer = req.file.buffer || (await import('fs')).readFileSync(req.file.path);
     const ocrResult = await ocrService.verifyAPC(fileBuffer, fullName, rphNumber, req.file.originalname);
 
-    // In production mode, if the file does not contain the phrase
-    // "Annual Certificate", reject registration outright. In demo
-    // mode we record the heuristic result and let the admin make the final call.
     if (!env.DEMO_MODE && !ocrResult.keywordFound) {
       return res.status(400).json({
         error: 'The uploaded file does not appear to be a valid Annual Certificate (the phrase "Annual Certificate" was not detected). Please upload your actual APC.',
       });
     }
 
-    // Create user (always pending_verification — admin must review)
     const user = await authService.createUser({ fullName, email, password, workingPlace, rphNumber });
 
-    // Save APC file reference and OCR result on user record
     await authService.updateUser(user.id, {
       apcFileUrl: req.file.filename,
       apcOriginalFilename: req.file.originalname,
@@ -90,11 +89,8 @@ router.post('/register', authLimiter, upload.single('apcFile'), async (req: Requ
 
     analyticsService.track({ eventType: 'register', userId: user.id, metadata: { email } });
 
-    // Notify all admins to review this new registration
     await notifyAdminsOfNewRegistration({ ...user, apcFileUrl: req.file.filename });
 
-    // In demo mode, skip 2FA and return tokens directly so the user can log in
-    // and use the search immediately (they cannot contribute until verified).
     if (env.DEMO_MODE) {
       const fresh = await authService.findUserById(user.id);
       const tokens = authService.generateTokens(fresh);
@@ -107,7 +103,6 @@ router.post('/register', authLimiter, upload.single('apcFile'), async (req: Requ
       });
     }
 
-    // Production mode: still send 2FA code (login will check verificationStatus)
     const code = authService.generate2FACode(email);
     await emailService.send2FACode(email, code);
 
@@ -126,7 +121,7 @@ router.post('/register', authLimiter, upload.single('apcFile'), async (req: Requ
 // Login
 router.post('/login', authLimiter, async (req: Request, res: Response) => {
   try {
-    const { email, password, rememberMe } = req.body;
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -142,25 +137,20 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Reject login if the admin has explicitly rejected the account.
     if (user.verificationStatus === 'rejected') {
       return res.status(403).json({
         error: `Your account verification was rejected${user.verificationRejectedReason ? `: ${user.verificationRejectedReason}` : '.'} Please contact the administrator.`,
       });
     }
-    // Pending users CAN log in — they will be able to search but the
-    // verifiedOnly middleware will block them from contributing.
 
     analyticsService.track({ eventType: 'login', userId: user.id, metadata: { email } });
 
-    // In demo mode, skip 2FA
     if (env.DEMO_MODE) {
-      const tokens = authService.generateTokens(user, rememberMe);
+      const tokens = authService.generateTokens(user);
       const { password: _, ...safeUser } = user;
       return res.json({ user: safeUser, ...tokens });
     }
 
-    // Send 2FA code
     const code = authService.generate2FACode(email);
     await emailService.send2FACode(email, code);
 
@@ -270,104 +260,50 @@ router.put('/settings', authMiddleware, async (req: AuthRequest, res: Response) 
   }
 });
 
-// Logout (client-side token removal, this is a placeholder)
+// Logout
 router.post('/logout', (_req: Request, res: Response) => {
   res.json({ message: 'Logged out successfully' });
 });
 
-// --- Password Reset ---
-// Request reset link
-router.post('/forgot-password', authLimiter, async (req: Request, res: Response) => {
+// ── Forgot Password (direct reset — no email link) ───────────────────────────
+
+// Step 1: verify the email exists, return a masked name for confirmation
+router.post('/forgot-password/verify-email', authLimiter, async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
-    }
-
-    const user = await authService.findUserByEmail(email);
-
-    // Always return success to prevent email enumeration
-    if (!user) {
-      return res.json({
-        message: 'If an account exists with this email, a password reset link has been sent.',
-      });
-    }
-
-    // Generate and email the reset link
-    const token = authService.generatePasswordResetToken(email);
-    const resetLink = `${env.CLIENT_URL}/reset-password?token=${token}`;
-
-    await emailService.sendPasswordResetEmail(email, resetLink);
-
-    analyticsService.track({
-      eventType: 'password_reset_request',
-      userId: user.id,
-      metadata: { email },
-    });
-
-    res.json({
-      message: 'If an account exists with this email, a password reset link has been sent. The link is valid for 5 minutes.',
-      // In demo mode also return the link directly so it works without SMTP
-      ...(env.DEMO_MODE && { demoResetLink: resetLink }),
-    });
-  } catch (error: any) {
-    console.error('[Forgot Password Error]', error);
-    res.status(500).json({ error: 'Failed to process password reset request' });
-  }
-});
-
-// Verify a reset token (used by the frontend before showing the form)
-router.get('/reset-password/verify', (req: Request, res: Response) => {
-  try {
-    const { token } = req.query;
-    if (!token || typeof token !== 'string') {
-      return res.status(400).json({ valid: false, error: 'Token is required' });
-    }
-    const email = authService.verifyPasswordResetToken(token);
-    if (!email) {
-      return res.status(400).json({ valid: false, error: 'This reset link is invalid or has expired (links are valid for 5 minutes only).' });
-    }
-    res.json({ valid: true, email });
-  } catch (error: any) {
-    res.status(500).json({ valid: false, error: 'Failed to verify token' });
-  }
-});
-
-// Submit new password
-router.post('/reset-password', authLimiter, async (req: Request, res: Response) => {
-  try {
-    const { token, newPassword } = req.body;
-
-    if (!token || !newPassword) {
-      return res.status(400).json({ error: 'Token and new password are required' });
-    }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
-    }
-
-    // Consume the token (single-use)
-    const email = authService.consumePasswordResetToken(token);
-    if (!email) {
-      return res.status(400).json({ error: 'This reset link is invalid or has expired (links are valid for 5 minutes only). Please request a new one.' });
-    }
+    if (!email) return res.status(400).json({ error: 'Email is required' });
 
     const user = await authService.findUserByEmail(email);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'No account found with that email address.' });
     }
+
+    // Mask: "Hanisah Johaari" → "H****** J******"
+    const maskWord = (w: string) => w[0] + '*'.repeat(Math.max(w.length - 1, 2));
+    const maskedName = user.fullName.split(' ').map(maskWord).join(' ');
+
+    res.json({ maskedName });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Step 2: set the new password directly (email was confirmed in step 1)
+router.post('/forgot-password/reset', authLimiter, async (req: Request, res: Response) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword || newPassword.length < 8) {
+      return res.status(400).json({ error: 'Email and password (min 8 chars) required' });
+    }
+
+    const user = await authService.findUserByEmail(email);
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
     await authService.updatePassword(user.id, newPassword);
 
-    analyticsService.track({
-      eventType: 'password_reset_complete',
-      userId: user.id,
-      metadata: { email },
-    });
-
-    res.json({ message: 'Password has been reset successfully. You can now sign in with your new password.' });
-  } catch (error: any) {
-    console.error('[Reset Password Error]', error);
-    res.status(500).json({ error: 'Failed to reset password' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

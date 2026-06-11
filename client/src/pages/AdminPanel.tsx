@@ -19,7 +19,6 @@ export default function AdminPanel() {
   const [stats, setStats] = useState<any>(null);
   const submissionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const userRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  // Password reset state (true admin only)
   const [resetForm, setResetForm] = useState<{ [userId: string]: string }>({});
   const [showResetInput, setShowResetInput] = useState<{ [userId: string]: boolean }>({});
   const [showNewPw, setShowNewPw] = useState<{ [userId: string]: boolean }>({});
@@ -147,10 +146,7 @@ export default function AdminPanel() {
 
   const handleResetPassword = async (userId: string, userEmail: string) => {
     const newPassword = resetForm[userId]?.trim();
-    if (!newPassword || newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters');
-      return;
-    }
+    if (!newPassword || newPassword.length < 8) { toast.error('Password must be at least 8 characters'); return; }
     try {
       await api.post('/admin/reset-password', { userId, newPassword });
       toast.success(`Password reset for ${userEmail}`);
@@ -462,10 +458,7 @@ export default function AdminPanel() {
                           </button>
                         )}
                         {u.role !== 'true_admin' && (
-                          <button
-                            onClick={() => setShowResetInput((prev) => ({ ...prev, [u.id]: !prev[u.id] }))}
-                            className="flex items-center gap-1 text-xs text-warning-600 hover:underline"
-                          >
+                          <button onClick={() => setShowResetInput((prev) => ({ ...prev, [u.id]: !prev[u.id] }))} className="flex items-center gap-1 text-xs text-warning-600 hover:underline">
                             <KeyRound size={14} />Reset Password
                           </button>
                         )}
@@ -480,26 +473,12 @@ export default function AdminPanel() {
                               onChange={(e) => setResetForm((prev) => ({ ...prev, [u.id]: e.target.value }))}
                               className="border border-gray-300 rounded px-2 py-1 text-xs w-40 pr-7"
                             />
-                            <button
-                              type="button"
-                              onClick={() => setShowNewPw((prev) => ({ ...prev, [u.id]: !prev[u.id] }))}
-                              className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400"
-                            >
+                            <button type="button" onClick={() => setShowNewPw((prev) => ({ ...prev, [u.id]: !prev[u.id] }))} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400">
                               {showNewPw[u.id] ? <EyeOff size={12} /> : <Eye size={12} />}
                             </button>
                           </div>
-                          <button
-                            onClick={() => handleResetPassword(u.id, u.email)}
-                            className="bg-warning-600 text-white text-xs px-2 py-1 rounded hover:bg-warning-700"
-                          >
-                            Set
-                          </button>
-                          <button
-                            onClick={() => setShowResetInput((prev) => ({ ...prev, [u.id]: false }))}
-                            className="text-gray-400 text-xs px-1"
-                          >
-                            ✕
-                          </button>
+                          <button onClick={() => handleResetPassword(u.id, u.email)} className="bg-warning-600 text-white text-xs px-2 py-1 rounded hover:bg-warning-700">Set</button>
+                          <button onClick={() => setShowResetInput((prev) => ({ ...prev, [u.id]: false }))} className="text-gray-400 text-xs px-1">✕</button>
                         </div>
                       )}
                     </td>

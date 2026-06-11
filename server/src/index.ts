@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { EventEmitter } from 'events';
 import { env } from './config/env.js';
 import { RATE_LIMITS } from './config/constants.js';
 import { UPLOADS_DIR } from './paths.js';
@@ -12,8 +13,25 @@ import { adminRoutes } from './routes/admin.js';
 import { cmsRoutes } from './routes/cms.js';
 import { notificationRoutes } from './routes/notifications.js';
 import { analyticsRoutes } from './routes/analytics.js';
+import { authMiddleware } from './middleware/auth.js';
 
 const app = express();
+
+// ── SSE Event Bus ────────────────────────────────────────────────────────────
+// sseClients maps userId → Response so we can push events to specific users
+// or broadcast to everyone.
+const _serverEvents = new EventEmitter();
+const sseClients: Map<string, express.Response> = new Map();
+
+export function broadcastEvent(type: string, data: any, targetUserId?: string) {
+  const payload = `data: ${JSON.stringify({ type, ...data })}\n\n`;
+  if (targetUserId) {
+    sseClients.get(targetUserId)?.write(payload);
+  } else {
+    sseClients.forEach((res) => res.write(payload));
+  }
+}
+// ── End SSE helpers ──────────────────────────────────────────────────────────
 
 // Security
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
@@ -42,6 +60,28 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+// ── SSE stream endpoint ──────────────────────────────────────────────────────
+// Frontend connects here (once, on login) to receive live push events.
+// Token is passed as ?token=<accessToken> because EventSource doesn't support headers.
+app.get('/api/events/stream', authMiddleware, (req: any, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const userId: string = req.user.id;
+  sseClients.set(userId, res);
+
+  // Keep-alive ping every 25 seconds to prevent proxy timeouts
+  const keepAlive = setInterval(() => res.write(': ping\n\n'), 25000);
+
+  req.on('close', () => {
+    clearInterval(keepAlive);
+    sseClients.delete(userId);
+  });
+});
+// ── End SSE endpoint ─────────────────────────────────────────────────────────
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/search', searchRoutes);
@@ -61,12 +101,12 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 app.listen(env.PORT, () => {
-  console.log(`\n  \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510`);
-  console.log(`  \u2502  PreserveLink Server                      \u2502`);
-  console.log(`  \u2502  Mode: ${env.DEMO_MODE ? 'DEMO (no external APIs needed)' : 'PRODUCTION                   '} \u2502`);
-  console.log(`  \u2502  Port: ${env.PORT}                                  \u2502`);
-  console.log(`  \u2502  URL:  ${env.SERVER_URL}              \u2502`);
-  console.log(`  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n`);
+  console.log(`\n  ┌────────────────────────────────────────────┐`);
+  console.log(`  │  PreserveLink Server                      │`);
+  console.log(`  │  Mode: ${env.DEMO_MODE ? 'DEMO (no external APIs needed)' : 'PRODUCTION                   '} │`);
+  console.log(`  │  Port: ${env.PORT}                                  │`);
+  console.log(`  │  URL:  ${env.SERVER_URL}              │`);
+  console.log(`  └────────────────────────────────────────────┘\n`);
   if (env.DEMO_MODE) {
     console.log('  Demo credentials:');
     console.log('  Email: hanisahjohaari@gmail.com');

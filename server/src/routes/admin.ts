@@ -5,6 +5,8 @@ import { authService } from '../services/authService.js';
 import { emailService } from '../services/emailService.js';
 import { notificationService } from '../services/notificationService.js';
 import { authMiddleware, adminOnly, trueAdminOnly, AuthRequest } from '../middleware/auth.js';
+import { broadcastEvent } from '../index.js';
+import bcrypt from 'bcryptjs';
 
 const router = Router();
 
@@ -22,7 +24,7 @@ router.get('/submissions', (_req: AuthRequest, res: Response) => {
   }
 });
 
-// Update submission status
+// Update submission status (approve / reject / awaiting_reply)
 router.put('/submissions/:id', async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -37,10 +39,6 @@ router.put('/submissions/:id', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Submission not found' });
     }
 
-    // If approved, write the contribution to the Google Sheet (or local
-    // queue if no service-account credentials are set). The data also stays
-    // in our contribution store so the user can see the approval reflected
-    // in their dashboard.
     if (status === 'approved') {
       const contributorUser = await authService.findUserById(contribution.userId);
       const stabilityStatementText = contribution.stabilityStatements && contribution.stabilityStatements.length > 0
@@ -69,7 +67,7 @@ router.put('/submissions/:id', async (req: AuthRequest, res: Response) => {
       console.log('[Approval]', writeResult.message);
     }
 
-    // Send email notification
+    // Notify the contributor by email
     const user = await authService.findUserById(contribution.userId);
     if (user) {
       const subject = status === 'approved'
@@ -83,6 +81,13 @@ router.put('/submissions/:id', async (req: AuthRequest, res: Response) => {
           ? `Your submission for ${contribution.genericName} has been reviewed but could not be approved. ${comment ? `Reason: ${comment}` : ''}`
           : `We need additional information regarding your submission for ${contribution.genericName}. ${comment ? `Comment: ${comment}` : ''} Please respond through your dashboard.`;
       await emailService.sendNotification(user.email, subject, message);
+
+      // ── SSE: push live update to the contributor ──────────────────────────
+      broadcastEvent('CONTRIBUTION_UPDATED', {
+        contributionId: id,
+        status,
+        genericName: contribution.genericName,
+      }, contribution.userId);
     }
 
     res.json({ message: `Submission ${status}`, contribution });
@@ -92,8 +97,7 @@ router.put('/submissions/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
-// --- USER VERIFICATION ---
-// List users that are pending verification (admins reviewing APCs)
+// List users pending verification
 router.get('/pending-users', async (_req: AuthRequest, res: Response) => {
   try {
     const allUsers = await authService.getAllUsers();
@@ -122,7 +126,6 @@ router.put('/users/:id/verify', async (req: AuthRequest, res: Response) => {
       verifiedBy: req.user!.id,
     });
 
-    // Notify the user
     notificationService.create({
       userId: id,
       title: 'Your Account Has Been Verified',
@@ -135,6 +138,13 @@ router.put('/users/:id/verify', async (req: AuthRequest, res: Response) => {
       'Your PreserveLink Account Has Been Verified',
       'An administrator has reviewed your APC and verified your account. You can now contribute stability data on PreserveLink.',
     ).catch(() => {});
+
+    // ── SSE: tell the user their account is now verified ─────────────────────
+    broadcastEvent('ROLE_CHANGED', {
+      userId: id,
+      newRole: user.role,
+      verificationStatus: 'verified',
+    }, id);
 
     res.json({ message: 'User verified successfully' });
   } catch (error: any) {
@@ -162,7 +172,6 @@ router.put('/users/:id/reject-verification', async (req: AuthRequest, res: Respo
       rejectedBy: req.user!.id,
     });
 
-    // Notify the user via email
     emailService.sendNotification(
       user.email,
       'Your PreserveLink Registration Has Been Rejected',
@@ -199,15 +208,40 @@ router.put('/users/:id/role', trueAdminOnly, async (req: AuthRequest, res: Respo
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
     if (user.role === 'true_admin') {
       return res.status(403).json({ error: 'Cannot change True Admin role' });
     }
 
     await authService.updateUser(id, { role });
+
+    // ── SSE: tell the affected user their role changed ────────────────────────
+    broadcastEvent('ROLE_CHANGED', { userId: id, newRole: role }, id);
+
     res.json({ message: `User role updated to ${role}` });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to update user role' });
+  }
+});
+
+// Manual password reset (True Admin only)
+router.post('/reset-password', trueAdminOnly, async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId, newPassword } = req.body;
+    if (!userId || !newPassword || newPassword.length < 8) {
+      return res.status(400).json({ error: 'userId and newPassword (min 8 chars) required' });
+    }
+
+    const user = await authService.findUserById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.role === 'true_admin') {
+      return res.status(403).json({ error: 'Cannot reset True Admin password this way' });
+    }
+
+    await authService.updatePassword(userId, newPassword);
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

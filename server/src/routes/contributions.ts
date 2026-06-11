@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { contributionService } from '../services/contributionService.js';
 import { analyticsService } from '../services/analyticsService.js';
 import { authMiddleware, verifiedOnly, AuthRequest } from '../middleware/auth.js';
+import { broadcastEvent } from '../index.js';
 import { upload } from '../middleware/upload.js';
 
 const router = Router();
@@ -63,6 +64,20 @@ router.post('/', authMiddleware, verifiedOnly, upload.array('attachments', 5), a
       userId: req.user!.id,
       metadata: { genericName, brandName, manufacturer },
     });
+
+    // ── SSE: notify all admins of new contribution ──────────────────────────
+    try {
+      const { authService } = await import('../services/authService.js');
+      const allUsers = await authService.getAllUsers();
+      const admins = allUsers.filter((u: any) => u.role === 'admin' || u.role === 'true_admin');
+      for (const admin of admins) {
+        broadcastEvent('NEW_CONTRIBUTION', {
+          contributionId: contribution.id,
+          genericName: contribution.genericName,
+          contributorName: contribution.contributorName,
+        }, admin.id);
+      }
+    } catch {}
 
     res.status(201).json({ message: 'Contribution submitted successfully', contribution });
   } catch (error: any) {
