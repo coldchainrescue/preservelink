@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: rescuechain
+    runtime: node
+    repo: https://github.com/oldchainrescue/rescuechain.git
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm run start -w server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "false"
+      - key: PORT
+        value: "3001"
+      - key: CLIENT_URL
+        value: https://rescuechain.onrender.com
+      - key: SERVER_URL
+        value: https://rescuechain.onrender.com
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: TRUE_ADMIN_EMAIL
+        value: hanisahjohaari@gmail.com
+      - key: GOOGLE_SHEET_ID
+        value: 1RrsxZsKniTPksKbbXdzUEEbE96wVvdZyaxcXVhQD03E
+      - key: GOOGLE_SERVICE_ACCOUNT_EMAIL
+        sync: false
+      - key: GOOGLE_PRIVATE_KEY
+        sync: false
+      - key: GOOGLE_DRIVE_FOLDER_ID
+        sync: false
+      - key: GOOGLE_CLOUD_VISION_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        value: onboarding@resend.dev
