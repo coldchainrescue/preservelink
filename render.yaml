@@ -2,7 +2,7 @@ services:
   - type: web
     name: rescuechain
     runtime: node
-    repo: https://github.com/coldchainrescue/rescuechain.git
+    repo: https://github.com/coldchainrescue/preservelink.git
     plan: free
     region: singapore
     branch: main
