@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: rescuechain
+    name: preservelink
     runtime: node
     repo: https://github.com/coldchainrescue/preservelink.git
     plan: free
@@ -17,9 +17,9 @@ services:
       - key: PORT
         value: "3001"
       - key: CLIENT_URL
-        value: https://rescuechain.onrender.com
+        value: https://preservelink.onrender.com
       - key: SERVER_URL
-        value: https://rescuechain.onrender.com
+        value: https://preservelink.onrender.com
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
