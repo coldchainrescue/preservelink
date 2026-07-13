@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { EventEmitter } from 'events';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import { RATE_LIMITS } from './config/constants.js';
 import { UPLOADS_DIR } from './paths.js';
@@ -14,6 +15,12 @@ import { cmsRoutes } from './routes/cms.js';
 import { notificationRoutes } from './routes/notifications.js';
 import { analyticsRoutes } from './routes/analytics.js';
 import { authMiddleware } from './middleware/auth.js';
+
+import { EventEmitter } from 'events';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDistPath = path.resolve(__dirname, '../../client/dist');
 
 const app = express();
 
@@ -50,6 +57,11 @@ app.use('/api/', generalLimiter);
 
 // Static files (uploads)
 app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Serve built React frontend in production
+if (env.NODE_ENV === 'production') {
+  app.use(express.static(clientDistPath));
+}
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -99,6 +111,13 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
     ...(env.DEMO_MODE && { stack: err.stack }),
   });
 });
+
+// Fallback to React index.html for non-API routes in production
+if (env.NODE_ENV === 'production') {
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
 
 app.listen(env.PORT, () => {
   console.log(`\n  ┌────────────────────────────────────────────┐`);

@@ -17,6 +17,7 @@ for (const p of envPaths) {
 }
 
 export const env = {
+  NODE_ENV: process.env.NODE_ENV || 'development',
   DEMO_MODE: process.env.DEMO_MODE !== 'false',
   PORT: parseInt(process.env.PORT || '3001', 10),
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
