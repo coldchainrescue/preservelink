@@ -7,8 +7,8 @@ const __dirname = path.dirname(__filename);
 // Server root: server/
 export const SERVER_ROOT = path.resolve(__dirname, '..');
 
-// Data directory: server/src/data/
-export const DATA_DIR = path.resolve(__dirname, 'data');
+// Data directory: server/src/data/ (source files, kept outside dist so updates persist)
+export const DATA_DIR = path.resolve(SERVER_ROOT, 'src', 'data');
 
 // Uploads directory: server/uploads/
 export const UPLOADS_DIR = path.resolve(SERVER_ROOT, 'uploads');
